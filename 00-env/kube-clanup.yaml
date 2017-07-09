@@ -1,6 +1,7 @@
 ---
-- name: Setup kubernetes
-  hosts: all-nodes
+- name: Cleanup kubernetes
+
+  hosts: kube
 
   tasks:
 
@@ -10,8 +11,16 @@
       name: '{{ item }}'
       enabled: false
     with_items:
+    - etcd3
+    - flanneld
     - kubelet
     - kube-proxy
+    when: inventory_hostname in groups['kube-nodes']
+
+  - name: Create Kubernetes Manifest Folder
+    file: 
+      path: '{{ manifest_dir }}'
+      state: absent
     when: inventory_hostname in groups['kube-nodes']
 
   - name: Remove previosly created containers
@@ -23,7 +32,7 @@
   - name: Remove SELinux context
     sefcontext:
       target: '{{ item }}(/.*)?'
-      setype: svirt_sandbox_file_t
+      setype: '{{ etcd_selinux }}'
       state: absent
     with_items:
     - '{{ etc_data }}'
@@ -35,8 +44,8 @@
       state: absent
     when: inventory_hostname in groups['kube-nodes']
 
-  - name: Remove ETCD Discovery Tokent File
+  - name: Remove ETCD Discovery Token File
     file:
       path: '{{ etcd_guid_file }}'
       state: absent
-    when: inventory_hostname in groups['master']
+    when: inventory_hostname in groups['bastion']

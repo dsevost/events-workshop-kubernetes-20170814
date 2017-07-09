@@ -1,6 +1,6 @@
 ---
 - name: Create an RHV based VM
-  hosts: master
+  hosts: bastion
   gather_facts: false
 
   vars_prompt:

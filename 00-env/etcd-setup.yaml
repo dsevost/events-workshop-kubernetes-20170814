@@ -1,0 +1,51 @@
+---
+- name: Setup kubernetes
+  hosts: kube-nodes
+
+  vars:
+    etcd_guid_file_content: "{{ lookup('file', etcd_guid_file) }}"
+    systemd_etc_directory: '/etc/systemd/system'
+
+  tasks:
+
+  - name: Set Node Name
+    set_fact: node_name='{{ ansible_hostname }}'
+
+  - name: Set Pod IP
+    set_fact: node_ip='{{ ansible_host }}'
+
+  - name: Copy ETCD Config
+    template:
+      src: 'files/{{ item }}.j2'
+      dest: '{{ etcd_dir }}/{{ item }}'
+    with_items:
+    - etcd.conf
+
+  - name: Setup SELinux context
+    sefcontext:
+      target: '{{ item }}(/.*)?'
+      setype: '{{ etcd_selinux }}'
+      state: present
+    with_items:
+    - '{{ etc_data }}'
+
+  - name: Create ETCD data directory
+    file:
+      path: '{{ item }}'
+      owner: etcd
+      group: etcd
+      state: directory
+    with_items:
+    - '{{ etc_data }}'
+
+  - name: Create ETCD Service Configuration
+    template:
+      src: 'files/etcd3.service.j2'
+      dest: '{{ systemd_etc_directory }}/etcd3.service'
+
+  - name: Start and Enable ETCD Services
+    systemd:
+      name: etcd3
+      daemon_reload: yes
+      enabled: true
+      state: started

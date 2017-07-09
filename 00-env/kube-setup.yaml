@@ -3,24 +3,28 @@
   hosts: kube-nodes
 
   vars:
-    etcd_guid_file_content: "{{ lookup('file', etcd_guid_file) }}"
+#    etcd_guid_file_content: "{{ lookup('file', etcd_guid_file) }}"
     pod_ext: "yaml"
+#    systemd_etc_directory: '/etc/systemd/system'
 
   tasks:
 
-#  - name: Check ETCD guid file already exists
-#    stat:
-#      path: '{{ etcd_guid_file }}'
-#    register: etcd_needs_guid
-#    when: inventory_hostname in groups['master']
+  - name: Start and Enable FlannelD Services
+    systemd:
+      name: flanneld
+      daemon_reload: yes
+      enabled: true
+      state: started
 
-#  - name: Get ETCD guid
-#    get_url:
-#      dest: '{{ etcd_guid_file }}'
-#      url: 'https://discovery.etcd.io/new?size=3'
-#    when:
-#    - inventory_hostname in groups['master']
-#    - etcd_needs_guid.stat.exists == False
+  - name: Restart Docker Service
+    systemd:
+      name: docker
+      state: restarted
+
+  - name: Create Kubernetes Manifest Folder
+    file: 
+      path: '{{ manifest_dir }}'
+      state: directory
 
   - name: Copy Pod Description
     copy:
@@ -31,11 +35,11 @@
     - controller-mgr-pod
     - scheduler-pod
 
-  - name: Set Pod name
-    set_fact: pod_name='{{ ansible_hostname }}'
+#  - name: Set Node Name
+#    set_fact: node_name='{{ ansible_hostname }}'
 
-  - name: Set Pod IP
-    set_fact: node_ip='{{ ansible_host }}'
+#  - name: Set Pod IP
+#    set_fact: node_ip='{{ ansible_host }}'
 
   - name: Copy Kubernetes config files
     template:
@@ -44,33 +48,17 @@
     with_items:
     - kubelet
 
-  - name: Copy ETCD Manifest
+  - name: Copy FlannelD Config
     template:
-      src: 'files/{{ item }}.{{ pod_ext}}.j2'
-      dest: '{{ manifest_dir }}/{{ item }}.{{ pod_ext}}'
+      src: 'files/{{ item }}.j2'
+      dest: '/etc/sysconfig/{{ item }}'
     with_items:
-    - etcd-pod
+    - flanneld
 
-  - name: Remove ETCD data content
-    file:
-      path: '{{ etc_data }}'
-      setype: svirt_sandbox_file_t
-      state: directory
-    with_items:
-    - '{{ etc_data }}'
-
-  - name: Setup SELinux context
-    sefcontext:
-      target: '{{ item }}(/.*)?'
-      setype: svirt_sandbox_file_t
-      state: present
-    with_items:
-    - '{{ etc_data }}'
-
-  - name: Start and Enable Kubernetes services
+  - name: Start and Enable Services
     systemd:
-      state: started
       name: '{{ item }}'
+      state: started
       enabled: true
     with_items:
     - kubelet

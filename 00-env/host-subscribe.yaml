@@ -1,6 +1,6 @@
 ---
 - name: Prepare RHEL host for RHV interation
-  hosts: all-nodes
+  hosts: kube-nodes
   vars_prompt:
     - name: 'username'
       prompt: 'Enter Red Hat username'
@@ -30,11 +30,6 @@
       password: '{{ password }}'
       pool: '{{ pool_id }}'
     when: rhel_pool_already_attached == "False"
-
-  - name: Create Kubernetes Manifest Folder
-    file: 
-      path: '{{ manifest_dir }}'
-      state: directory
 
   - name: Pull Kubernetes Docker Images
     docker_image:

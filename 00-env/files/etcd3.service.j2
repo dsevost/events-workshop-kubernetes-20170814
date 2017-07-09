@@ -1,0 +1,29 @@
+[Unit]
+Description=Etcd Server
+After=network.target
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+WorkingDirectory=/var/lib/etcd/
+EnvironmentFile=-/etc/etcd/etcd.conf
+User=etcd
+# set GOMAXPROCS to number of processors
+ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) /usr/bin/etcd --discovery \"$DISCOVERY_TOKEN\""
+#\
+#  --name \"${ETCD_NAME}\" \
+#  --advertise-client-urls \"$ETCD_ADVERTISE_CLIENT_URLS\" \
+#  --listen-peer-urls \"$ETCD_LISTEN_PEER_URLS\" \
+#  --listen-client-urls \"$ETCD_LISTEN_CLIENT_URLS\" \
+#  --data-dir \"${ETCD_DATA_DIR}\" \
+#  --discovery \"$DISCOVERY_TOKEN\" \
+#  "
+#  --initial-advertize-peer-urls \"$ETCD_INITIAL_ADVERTISE_PEER_URLS\" \
+
+Restart=on-failure
+RestartSec=15
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

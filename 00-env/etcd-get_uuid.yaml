@@ -1,6 +1,6 @@
 ---
 - name: Setup kubernetes
-  hosts: master
+  hosts: bastion
 
   tasks:
 

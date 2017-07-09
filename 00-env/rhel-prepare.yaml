@@ -1,6 +1,6 @@
 ---
 - name: Prepare RHEL host for RHV interation
-  hosts: localhost
+  hosts: bastion
   vars:
     yum_ovirt_repo: rhel-7-server-rhv-4.1-rpms
   tasks:
@@ -13,4 +13,3 @@
      with_items:
      - python-ovirt-engine-sdk4
      - ovirt-engine-sdk-python
-
