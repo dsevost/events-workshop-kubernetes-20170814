@@ -1,0 +1,42 @@
+---
+- name: Prepare RHEL host for RHV interation
+  hosts: all-nodes
+  vars_prompt:
+    - name: 'username'
+      prompt: 'Enter Red Hat username'
+      private: no
+      default: dmitry.sevostyanov@redhat.com
+    - name: 'password'
+      prompt: 'Enter Red Hat user password'
+      private: yes
+
+  tasks:
+
+  - name: Retrieve the RHEL Pool ID
+    command: subscription-manager list --available --matches="{{ pool_id }}" --pool-only
+    register: rhel_pool_id
+    changed_when: False
+
+  - name: Determine if Pool Already Attached
+    command: subscription-manager list --consumed --matches="{{ pool_id }}" --pool-only
+    register: rhel_pool_already_attached
+    changed_when: False
+    when: rhel_pool_id.stdout == ''
+
+  - name: Subscribe system
+    redhat_subscription:
+      state: present
+      username: '{{ username }}'
+      password: '{{ password }}'
+      pool: '{{ pool_id }}'
+    when: rhel_pool_already_attached == "False"
+
+  - name: Create Kubernetes Manifest Folder
+    file: 
+      path: '{{ manifest_dir }}'
+      state: directory
+
+  - name: Pull Kubernetes Docker Images
+    docker_image:
+      name: '{{ item }}'
+    with_items: '{{ kube_images }}'

@@ -1,0 +1,42 @@
+---
+- name: Setup kubernetes
+  hosts: all-nodes
+
+  tasks:
+
+  - name: Stop Kubernetes services
+    systemd:
+      state: stopped
+      name: '{{ item }}'
+      enabled: false
+    with_items:
+    - kubelet
+    - kube-proxy
+    when: inventory_hostname in groups['kube-nodes']
+
+  - name: Remove previosly created containers
+    shell: |
+      docker kill $(docker ps -aq) || true
+      docker rm $(docker ps -aq) || true
+    when: inventory_hostname in groups['kube-nodes']
+
+  - name: Remove SELinux context
+    sefcontext:
+      target: '{{ item }}(/.*)?'
+      setype: svirt_sandbox_file_t
+      state: absent
+    with_items:
+    - '{{ etc_data }}'
+    when: inventory_hostname in groups['kube-nodes']
+
+  - name: Remove ETCD data content
+    file:
+      path: '{{ etc_data }}'
+      state: absent
+    when: inventory_hostname in groups['kube-nodes']
+
+  - name: Remove ETCD Discovery Tokent File
+    file:
+      path: '{{ etcd_guid_file }}'
+      state: absent
+    when: inventory_hostname in groups['master']

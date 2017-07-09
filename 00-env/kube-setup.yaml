@@ -1,0 +1,77 @@
+---
+- name: Setup kubernetes
+  hosts: kube-nodes
+
+  vars:
+    etcd_guid_file_content: "{{ lookup('file', etcd_guid_file) }}"
+    pod_ext: "yaml"
+
+  tasks:
+
+#  - name: Check ETCD guid file already exists
+#    stat:
+#      path: '{{ etcd_guid_file }}'
+#    register: etcd_needs_guid
+#    when: inventory_hostname in groups['master']
+
+#  - name: Get ETCD guid
+#    get_url:
+#      dest: '{{ etcd_guid_file }}'
+#      url: 'https://discovery.etcd.io/new?size=3'
+#    when:
+#    - inventory_hostname in groups['master']
+#    - etcd_needs_guid.stat.exists == False
+
+  - name: Copy Pod Description
+    copy:
+      src: 'files/{{ item }}.{{ pod_ext}}'
+      dest: '{{ manifest_dir }}'
+    with_items:
+    - apiserver-pod
+    - controller-mgr-pod
+    - scheduler-pod
+
+  - name: Set Pod name
+    set_fact: pod_name='{{ ansible_hostname }}'
+
+  - name: Set Pod IP
+    set_fact: node_ip='{{ ansible_host }}'
+
+  - name: Copy Kubernetes config files
+    template:
+      src: 'files/{{ item }}.j2'
+      dest: '{{ manifest_dir }}/../kubelet'
+    with_items:
+    - kubelet
+
+  - name: Copy ETCD Manifest
+    template:
+      src: 'files/{{ item }}.{{ pod_ext}}.j2'
+      dest: '{{ manifest_dir }}/{{ item }}.{{ pod_ext}}'
+    with_items:
+    - etcd-pod
+
+  - name: Remove ETCD data content
+    file:
+      path: '{{ etc_data }}'
+      setype: svirt_sandbox_file_t
+      state: directory
+    with_items:
+    - '{{ etc_data }}'
+
+  - name: Setup SELinux context
+    sefcontext:
+      target: '{{ item }}(/.*)?'
+      setype: svirt_sandbox_file_t
+      state: present
+    with_items:
+    - '{{ etc_data }}'
+
+  - name: Start and Enable Kubernetes services
+    systemd:
+      state: started
+      name: '{{ item }}'
+      enabled: true
+    with_items:
+    - kubelet
+    - kube-proxy

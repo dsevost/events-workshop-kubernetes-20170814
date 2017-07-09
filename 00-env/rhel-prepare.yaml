@@ -1,0 +1,16 @@
+---
+- name: Prepare RHEL host for RHV interation
+  hosts: localhost
+  vars:
+    yum_ovirt_repo: rhel-7-server-rhv-4.1-rpms
+  tasks:
+   - name: Install RHV SDK
+     become: yes
+     yum:
+       name: '{{ item }}'
+       enablerepo: '{{ yum_ovirt_repo }}'
+       state: present
+     with_items:
+     - python-ovirt-engine-sdk4
+     - ovirt-engine-sdk-python
+
