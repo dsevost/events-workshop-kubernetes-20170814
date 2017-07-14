@@ -1,37 +1,95 @@
 ---
-- name: Prepare RHEL host for RHV interation
+- name: Manage RHEL Subscription
+
   hosts: kube-nodes
+
   vars_prompt:
-    - name: 'username'
-      prompt: 'Enter Red Hat username'
-      private: no
-      default: dmitry.sevostyanov@redhat.com
-    - name: 'password'
-      prompt: 'Enter Red Hat user password'
-      private: yes
+  - name: 'satellite_host'
+    prompt: 'Enter local Red Hat Satellite Host, leave blank if none'
+    private: no
+    default: 'satellite.srv.local'
+  - name: 'satellite_org'
+    prompt: 'Enter Local Red Hat Satellite Organisation, leave blank if none'
+    private: no
+    default: 'HQ'
+  - name: 'activation_key'
+    prompt: 'Enter Activation Key, leave blank if none'
+    private: no
+    default: 'Atomic'
+#  - name: 'satellite_org'
+#    prompt: 'Enter Local Red Hat Satellite Organisation, leave blank if none'
+#    private: no
+#    default: 'HQ'
+#  - name: 'satellite_env'
+#    prompt: 'Enter Local Red Hat Satellite Enviroment, leave blank if none'
+#    private: no
+#    default: 'Library'
+  - name: 'pool_id'
+    prompt: 'Enter Red Hat Subscription Pool ID'
+    private: no
+#    default: '4028bca25bcda914015bfcb2cdea082c'
+  - name: 'username'
+    prompt: 'Enter Red Hat username'
+    private: no
+    default: 'dsevosty'
+    default: dmitry.sevostyanov@redhat.com
+#  - name: 'password'
+#    prompt: 'Enter Red Hat user password'
+#    private: yes
 
   tasks:
 
-  - name: Retrieve the RHEL Pool ID
-    command: subscription-manager list --available --matches="{{ pool_id }}" --pool-only
-    register: rhel_pool_id
-    changed_when: False
+  - name: Download Local Red Hat Satellite configuration script
+    get_url:
+      url: 'http://{{ satellite_host }}/pub/katello-rhsm-consumer'
+      dest: /tmp/katello-rhsm-consumer
+    when: satellite_host != ''
 
-  - name: Determine if Pool Already Attached
-    command: subscription-manager list --consumed --matches="{{ pool_id }}" --pool-only
-    register: rhel_pool_already_attached
-    changed_when: False
-    when: rhel_pool_id.stdout == ''
+  - name: Run Local Red Hat Satellite configuration script
+    command: /bin/sh /tmp/katello-rhsm-consumer
+    when: satellite_host != ''
 
-  - name: Subscribe system
+  - name: Remove Subscription
     redhat_subscription:
       state: present
-      username: '{{ username }}'
-      password: '{{ password }}'
-      pool: '{{ pool_id }}'
-    when: rhel_pool_already_attached == "False"
 
-  - name: Pull Kubernetes Docker Images
-    docker_image:
-      name: '{{ item }}'
-    with_items: '{{ kube_images }}'
+  - name: Subscribe system to Local Satellite
+    redhat_subscription:
+      state: present
+      activation_key: '{{ activatio_key }}'
+#      username: '{{ username }}'
+#      password: '{{ password }}'
+#      environment: '{{ satellite_env }}'
+      org_id: '{{ satellite_org }}'
+    when: satellite_host != ''
+
+#  - name: Retrieve the RHEL Pool ID
+#    command: subscription-manager list --available --matches="{{ pool_id }}" --pool-only
+#    register: rhel_pool_id
+##    changed_when: False
+
+#  - name: Determine if Pool Already Attached
+#    command: subscription-manager list --consumed --matches="{{ pool_id }}" --pool-only
+#    register: rhel_pool_already_attached
+##    changed_when: False
+#    when: rhel_pool_id.stdout == ''
+
+#  - name: Subscribe system to Local Satellite
+#    command: |
+#      subscription-manager register --force --auto-attach
+#      --username '{{ username }}' --password '{{ password }}'
+#      --environment '{{ satellite_env }}' --org '{{ satellite_org }}'
+#    when: satellite_host != ''
+
+#  - name: Attach system to Pool
+#    redhat_subscription:
+#      pool: '{{ pool_id }}'
+
+#    redhat_subscription:
+#      state: present
+#      username: '{{ username }}'
+#      password: '{{ password }}'
+#      environment: '{{ satellite_env }}'
+#      org_id: '{{ satellite_org }}'
+#      pool: '{{ pool_id }}'
+#    when: rhel_pool_already_attached == "False"

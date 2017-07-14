@@ -1,3 +1,4 @@
+# {{ ansible_managed }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,5 +11,5 @@ spec:
     imagePullPolicy: IfNotPresent
     name: hello-world
     ports:
-    - containerPort: 80
+    - containerPort: 8080
 

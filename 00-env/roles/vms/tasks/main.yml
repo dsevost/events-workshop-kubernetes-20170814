@@ -1,0 +1,56 @@
+---
+# tasks file for vms
+- name: Download Virtual provider SSL cert
+  get_url:
+    url: 'http://{{ virt_provider_host }}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA'
+    dest: /tmp/virtual-provider-CA.cert
+    validate_certs: false
+    force: yes
+  tags:
+  - create
+  - start
+
+- name: Obtain SSO token with using username/password credentials
+  ovirt_auth:
+    ca_file: /tmp/virtual-provider-CA.cert
+    url: 'https://{{ virt_provider_host }}/ovirt-engine/api'
+    username: '{{ username }}'
+    password: '{{ password }}'
+  tags:
+  - create
+  - start
+
+- name: Create vm
+  ovirt_vms:
+    auth: '{{ ovirt_auth }}'
+    state: present
+    name: "{{ hostvars[item]['inventory_hostname_short'] }}"
+    cluster: '{{ virt_provider_cluster }}'
+    template: '{{ kube_vm_template }}'
+    operating_system: rhel_7x64
+    stateless: false
+    cloud_init:
+      host_name: "{{ hostvars[item]['inventory_hostname'] }}"
+      user_name: '{{ user_name }}'
+      root_password: '{{ user_password }}'
+  with_items: "{{ groups['kube-nodes'] }}"
+  tags:
+  - create
+
+- name: Stop vm
+  ovirt_vms:
+    auth: '{{ ovirt_auth }}'
+    state: stopped
+    name: "{{ hostvars[item]['inventory_hostname_short'] }}"
+  with_items: "{{ groups['kube-nodes'] }}"
+  tags:
+  - create
+
+- name: Start vm
+  ovirt_vms:
+    auth: '{{ ovirt_auth }}'
+    state: running
+    name: "{{ hostvars[item]['inventory_hostname_short'] }}"
+  with_items: "{{ groups['kube-nodes'] }}"
+  tags:
+  - start

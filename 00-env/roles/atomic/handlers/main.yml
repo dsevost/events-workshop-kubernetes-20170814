@@ -1,0 +1,5 @@
+---
+# handlers file for atomic
+- name: reboot_host
+  command: shutdown -r + 2
+  ignore_errors: yes

@@ -23,8 +23,6 @@
     retries: 60
     delay: 10
 
-  - debug: var=flannel_key
-
   - name: Warming up ETCD cluster
     pause:
       seconds: 10
@@ -38,8 +36,8 @@
     command: |
       curl -L 'http://{{ ansible_host }}:2379/v2/keys/{{ flannel_key }}/config' -XPUT --data-urlencode value@/tmp/{{ flanneld_config }}
 
-  - name: Get FlannelD config to ETCD
+  - name: Get FlannelD config from ETCD
     uri:
       url: 'http://{{ ansible_host }}:2379/v2/keys/{{ flannel_key }}/config'
     register: res
-  - debug: var=res
+#  - debug: var=res

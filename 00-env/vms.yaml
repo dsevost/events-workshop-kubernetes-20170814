@@ -1,0 +1,17 @@
+---
+- name: Manage Kubernetes VMs
+  hosts: bastion
+  vars_prompt:
+  - name: 'username'
+    prompt: 'Enter RHEV-M username'
+    private: no
+    default: dsevosty@idm01.srv.local
+  - name: 'virt_provider_cluster'
+    private: no
+    default: 'RH-DEMO-01'
+  - name: 'password'
+    prompt: 'Enter RHEV-M users password'
+    private: yes
+    gather_facts: false
+  roles:
+  - role: vms

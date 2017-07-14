@@ -1,43 +1,101 @@
 [kube:children]
 all-nodes
-#bastion
-#kube-nodes
 
 [kube:vars]
+#
+# Location on Bastion host where ETCD Discovery token will be stored
+#
 etcd_guid_file='/tmp/etcd_guid.txt'
+#
+# A Key Flanneld will looking up its network configuration at ETCD
+#
 flannel_key=flanneld/kubernetes/network
-local_domain='client.local'
+#local_domain='client.local'
 
 [all-nodes:vars]
-pool_id='8a85f9815669d3fa01566a9b423260ca'
+#pool_id='8a85f9815669d3fa01566a9b423260ca'
 
 [all-nodes:children]
 kube-nodes
 bastion
 
 [bastion:vars]
-hostnames=[ 'kube01', 'kube02', 'kube03' ]
+#
+# VM template is used for Atomic VMs creation
+#
 kube_vm_template='rhel-atomic-cloud-7.3.0-3.x86_64'
+#
+# User name and password for default user ad Atomic host
+#
 user_name='cloud-user'
 user_password='redhat'
+#
+# VM provider host
+#
 virt_provider_host='rhve01.srv.local'
 
 [bastion]
-localhost connection=local
+#
+# Bastion is a controller for environment management
+#
+localhost ansible_connection=local
 
 [kube-nodes:vars]
 ansible_become=true
 ansible_ssh_user=cloud-user
+#
+# Red Hat Satellite (or Capsule) Local environment. Leave it blank or comment on if using access.redhat.com
+#
+satellite_host=satellite.srv.local
+#
+# ETCD config directory
+#
 etcd_dir='/etc/etcd'
+#
+# ETCD data directory
+#
+etc_data='/var/lib/etcd-data'
+#
+# ETCD data directory SELinux type
+#
 #etcd_selinux='svirt_sandbox_file_t'
 etcd_selinux='var_lib_t'
+#
+# Kubernetes config directory
+#
 kubernetes_dir='/etc/kubernetes'
+#
+# Kubernetes manifest directory
+#
 manifest_dir='{{ kubernetes_dir }}/manifests'
-etc_data='/var/lib/etcd-data'
-kube_images=[ 'rhel7/etcd3', 'rhel7/flannel', 'rhel7/kubernetes-apiserver', 'rhel7/kubernetes-controller-mgr', 'rhel7/kubernetes-scheduler', 'rhel7/pod-infrastructure' ]
+#kube_images=[ 'rhel7/etcd3', 'rhel7/flannel', 'rhel7/kubernetes-apiserver', 'rhel7/kubernetes-controller-mgr', 'rhel7/kubernetes-scheduler', 'rhel7/pod-infrastructure' ]
+#
+# specify docker image prefix for local docker registry.
+# Red Hat Satellite make available docker images for particular Organisation (Head Quoters like 'hq') and Product name (Rd Hat Container Catalogue like 'rhcc')
+# Othwrwise leave it blank (like '') or comment on
+#docker_images_prefix=''
+docker_images_prefix='hq-rhcc-'
+#
+# Docker images names for Kubernetes runtime
+#
+kube_images=[ 'kubernetes-apiserver', 'kubernetes-controller-mgr', 'kubernetes-scheduler', 'pod-infrastructure' ]
+#
+# Docker images for demo applications
+#
+eap_image='eap70-openshift'
+postgres_image='postgresql-95-rhel7'
 
+#
+# Host where Kubernetes client runs
+#
 [master-client]
 ds-kube01.client.local
 
+#
+# Kubernetes nodes
+#
 [kube-nodes]
 ds-kube0[1:3].client.local
+#ds-kube01.client.local ansible_host=192.168.62.121
+#ds-kube02.client.local ansible_host=192.168.62.123
+#ds-kube03.client.local ansible_host=192.168.62.126

@@ -1,0 +1,40 @@
+---
+# tasks file for subsribe
+- name: Remove Subscription
+  command: subscription-manager remove --all
+  ignore_errors: yes
+
+- name: Unregister system
+  command: subscription-manager unregister
+  ignore_errors: yes
+#  redhat_subscription:
+#    state: absent
+
+- name: Download Local Red Hat Satellite configuration script
+  get_url:
+    url: 'http://{{ satellite_host }}/pub/katello-rhsm-consumer'
+    dest: /tmp/katello-rhsm-consumer
+  when: satellite_host != ''
+
+- name: Run Local Red Hat Satellite configuration script
+  command: /bin/sh /tmp/katello-rhsm-consumer
+  when: satellite_host != ''
+
+- pause:
+    seconds: 10
+
+- name: Subscribe system at Local Satellite
+  redhat_subscription:
+    force_register: true
+    state: present
+    activationkey: '{{ activation_key }}'
+    org_id: '{{ satellite_org }}'
+  when: satellite_host != ''
+
+- name: Subscribe system at Red Hat CUstomer Portal
+  redhat_subscription:
+    username: '{{ username }}'
+    password: '{{ password }}'
+    pool: '{{ pool_id }}'
+    state: present
+  when: satellite_host == ''

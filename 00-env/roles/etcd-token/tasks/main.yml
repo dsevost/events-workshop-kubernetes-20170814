@@ -1,0 +1,23 @@
+---
+# tasks file for etcd-token
+- name: Remove ETCD discovery token
+  file:
+    path: '{{ etcd_guid_file }}'
+    state: absent
+  tags:
+  - clean
+
+- name: Check ETCD discovery token file already exists
+  stat:
+    path: '{{ etcd_guid_file }}'
+  register: etcd_needs_guid
+  tags:
+  - create
+
+- name: Get ETCD discovery token
+  get_url:
+    dest: '{{ etcd_guid_file }}'
+    url: 'https://discovery.etcd.io/new?size=3'
+  when: etcd_needs_guid.stat.exists == False
+  tags:
+  - create

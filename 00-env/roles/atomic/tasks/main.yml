@@ -1,0 +1,7 @@
+---
+# tasks file for atomic
+- name: Upgrade Atomic Host to latest OSTree
+  atomic_host:
+    revision: latest
+  notify:
+  - reboot_host

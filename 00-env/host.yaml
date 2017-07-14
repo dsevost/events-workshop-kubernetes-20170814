@@ -1,0 +1,34 @@
+---
+- name: Manage RHEL Subscription
+
+  hosts: kube-nodes
+
+  vars_prompt:
+#  - name: 'satellite_host'
+#    prompt: 'Enter local Red Hat Satellite Host, leave blank if none'
+#    private: no
+#    default: 'satellite.srv.local'
+  - name: 'satellite_org'
+    prompt: 'Enter Local Red Hat Satellite Organisation, leave blank if none'
+    private: no
+    default: 'HQ'
+  - name: 'activation_key'
+    prompt: 'Enter Activation Key, leave blank if none'
+    private: no
+    default: 'Atomic'
+  - name: 'pool_id'
+    prompt: 'Enter Red Hat Subscription Pool ID'
+    private: no
+  - name: 'username'
+    prompt: 'Enter Red Hat username'
+    private: no
+    default: 'dsevosty'
+#    default: dmitry.sevostyanov@redhat.com
+  - name: 'password'
+    prompt: 'Enter Red Hat user password'
+    private: yes
+
+  roles:
+  - role: subscribe
+  - role: atomic
+  - role: docker

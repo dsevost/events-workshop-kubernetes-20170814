@@ -1,0 +1,5 @@
+---
+- name: Manage ETCD cluster
+  hosts: kube-nodes
+  roles:
+  - role: flannel

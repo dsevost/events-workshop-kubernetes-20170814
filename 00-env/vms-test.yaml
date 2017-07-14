@@ -1,0 +1,6 @@
+---
+
+- name: Manage Kubernetes VMs
+  hosts: bastion
+  roles:
+  - role: vms

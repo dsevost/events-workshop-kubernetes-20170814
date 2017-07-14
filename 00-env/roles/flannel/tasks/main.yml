@@ -1,0 +1,66 @@
+---
+# tasks file for flannel
+- name: Get FlannelD config from ETCD
+  uri:
+    url: 'http://{{ ansible_host }}:2379/v2/keys/{{ flannel_key }}/config'
+    status_code: 200
+  register: res
+  ignore_errors: true
+  tags:
+  - create
+- debug: var=res
+  tags:
+  - create
+
+- name: Copy FlannelD Config
+  template:
+    src: 'templates/{{ item }}.j2'
+    dest: '/etc/sysconfig/{{ item }}'
+  with_items:
+  - flanneld
+  when: res.status != 200
+  tags:
+  - create
+
+- name: Copy FlannelD config
+  template:
+    src: 'templates/{{ flanneld_config }}.j2'
+    dest: '/tmp/{{ flanneld_config }}'
+  when: res.status != 200
+  tags:
+  - create
+
+- name: Put FlannelD config to ETCD
+  command: |
+    curl -L 'http://{{ ansible_host }}:2379/v2/keys/{{ flannel_key }}/config' -XPUT --data-urlencode value@/tmp/{{ flanneld_config }}
+  when: res.status != 200
+  notify:
+  - flanneld_restart
+  tags:
+  - create
+
+- name: Start FlannelD Service
+  systemd:
+    name: flanneld
+    state: started
+  notify:
+  - docker_restart
+  tags:
+  - create
+
+- name: Remove FLannelD Docker config
+  file:
+    path: /run/flannel/docker
+    state: absent
+  notify:
+  - docker_restart
+  tags:
+  - clean
+
+- name: Stop FlannelD Service
+  systemd:
+    name: flanneld
+    state: stopped
+    enabled: false
+  tags:
+  - clean

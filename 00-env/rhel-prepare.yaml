@@ -1,5 +1,5 @@
 ---
-- name: Prepare RHEL host for RHV interation
+- name: Prepare RHEL host for RHV interaction
   hosts: bastion
   vars:
     yum_ovirt_repo: rhel-7-server-rhv-4.1-rpms

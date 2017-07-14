@@ -1,0 +1,38 @@
+---
+# tasks file for docker
+- name: Setup Docker Insceure Registry
+  lineinfile:
+    name: /etc/sysconfig/docker
+    regexp: '^ADD_REGISTRY='
+    line: ADD_REGISTRY='--add-registry {{ satellite_host }}:5000'
+  when: satellite_host != ''
+  notify:
+  - docker_restart
+
+- name: Pull Kubernetes Docker Images from Local Satellite Registry
+  docker_image:
+    name: '{{ satellite_host }}:5000/{{ docker_images_prefix }}{{ item }}'
+  with_items: '{{ kube_images }}'
+  when: satellite_host != ''
+
+- name: Pull Application Docker Images from Local Satellite Registry
+  docker_image:
+    name: '{{ satellite_host }}:5000/{{ docker_images_prefix }}{{ item }}'
+  with_items: 
+  - '{{ eap_image }}'
+  - '{{ postgres_image }}'
+  when: satellite_host != ''
+
+- name: Pull Kubernetes Docker Images from Red Hat Registry
+  docker_image:
+    name: 'rhel7/{{ item }}'
+  with_items: '{{ kube_images }}'
+  when: satellite_host == ''
+
+- name: Pull Application Docker Images from Red Hat Registry
+  docker_image:
+    name: '{{ item }}'
+  with_items: 
+  - 'jboss-eap-7/{{ eap_image }}'
+  - 'rhcl/{{ postgres_image }}'
+  when: satellite_host == ''

@@ -1,7 +1,8 @@
 ---
   - include: kube-clanup.yaml
+  - include: docker-manage.yaml
   - include: etcd-get_uuid.yaml
   - include: etcd-setup.yaml
   - include: network-setup.yaml
   - include: kube-setup.yaml
-  - include: network-setup.yaml
+#  - include: network-setup.yaml

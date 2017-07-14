@@ -1,0 +1,3 @@
+---
+# vars file for flannel
+flanneld_config: flanneld-config.json

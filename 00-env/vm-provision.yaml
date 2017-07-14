@@ -1,6 +1,8 @@
 ---
 - name: Create an RHV based VM
+
   hosts: bastion
+
   gather_facts: false
 
   vars_prompt:
@@ -16,6 +18,10 @@
       private: yes
 
   tasks:
+
+#  - debug: msg="{{ hostvars[item]['inventory_hostname_short'] }}"
+#    with_items: "{{ groups['kube-nodes'] }}"
+
   - name: Download Virtual provider SSL cert
     get_url:
       url: 'http://{{ virt_provider_host }}/ovirt-engine/services/pki-resource?resource=ca-certificate&format=X509-PEM-CA'
@@ -31,16 +37,16 @@
       password: '{{ password }}'
 
   - name: Create vm
-    ovirt_vms:
+    ovirt_vms1:
       auth: '{{ ovirt_auth }}'
       state: present
-      name: 'ds-{{ item }}'
+      name: "{{ hostvars[item]['inventory_hostname_short'] }}"
       cluster: '{{ virt_provider_cluster }}'
       template: '{{ kube_vm_template }}'
       operating_system: rhel_7x64
       stateless: false
       cloud_init:
-        host_name: 'ds-{{ item }}.{{ local_domain }}'
+        host_name: "{{ hostvars[item]['inventory_hostname'] }}"
         user_name: '{{ user_name }}'
         root_password: '{{ user_password }}'
-    with_items: '{{ hostnames }}'
+    with_items: "{{ groups['kube-nodes'] }}"

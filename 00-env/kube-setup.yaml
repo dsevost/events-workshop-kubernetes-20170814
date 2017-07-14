@@ -3,9 +3,7 @@
   hosts: kube-nodes
 
   vars:
-#    etcd_guid_file_content: "{{ lookup('file', etcd_guid_file) }}"
     pod_ext: "yaml"
-#    systemd_etc_directory: '/etc/systemd/system'
 
   tasks:
 
@@ -34,12 +32,6 @@
     - apiserver-pod
     - controller-mgr-pod
     - scheduler-pod
-
-#  - name: Set Node Name
-#    set_fact: node_name='{{ ansible_hostname }}'
-
-#  - name: Set Pod IP
-#    set_fact: node_ip='{{ ansible_host }}'
 
   - name: Copy Kubernetes config files
     template:

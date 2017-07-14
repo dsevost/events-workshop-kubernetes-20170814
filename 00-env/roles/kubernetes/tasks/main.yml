@@ -1,0 +1,55 @@
+---
+# tasks file for kubernetes
+- name: Create Kubernetes Manifest Folder
+  file: 
+    path: '{{ manifest_dir }}'
+    state: directory
+  tags:
+  - create
+
+- set_fact: repo_name='{{ docker_images_prefix }}'
+  when: satellite_host != ''
+  tags:
+  - create
+
+- set_fact: repo_name='rhel7/'
+  when: satellite_host == ''
+  tags:
+  - create
+
+- debug: var=repo_name
+  tags:
+  - create
+
+- name: Copy Pod Manifest
+  template:
+    src: 'templates/{{ item }}.{{ manifest_ext}}.j2'
+    dest: '{{ manifest_dir }}/{{ item }}.{{ manifest_ext}}'
+  with_items:
+  - apiserver-pod
+  - controller-mgr-pod
+  - scheduler-pod
+  tags:
+  - create
+
+- name: Copy Kubernetes config files
+  template:
+    src: 'templates/{{ item }}.j2'
+    dest: '{{ kubernetes_dir }}/{{ item }}'
+  with_items:
+  - kubelet
+  notify:
+  - kubelet_restart
+  tags:
+  - create
+
+- name: Start and Enable Services
+  systemd:
+    name: '{{ item }}'
+    state: started
+    enabled: true
+  with_items:
+  - kubelet
+  - kube-proxy
+  tags:
+  - create

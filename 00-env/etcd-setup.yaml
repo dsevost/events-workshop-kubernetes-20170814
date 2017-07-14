@@ -1,5 +1,6 @@
 ---
-- name: Setup kubernetes
+- name: Manage ETCD cluster
+
   hosts: kube-nodes
 
   vars:
@@ -8,11 +9,12 @@
 
   tasks:
 
-  - name: Set Node Name
+  - name: Set ETCD Node Name
     set_fact: node_name='{{ ansible_hostname }}'
 
-  - name: Set Pod IP
-    set_fact: node_ip='{{ ansible_host }}'
+  - name: Set ETCD Node IP
+    set_fact: node_ip='{{ ansible_default_ipv4.address }}'
+#    set_fact: node_ip='{{ ansible_host }}'
 
   - name: Copy ETCD Config
     template:

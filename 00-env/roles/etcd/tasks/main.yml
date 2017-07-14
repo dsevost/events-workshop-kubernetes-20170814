@@ -1,0 +1,103 @@
+---
+# tasks file for etcd
+- name: Set ETCD Node Name
+  set_fact: node_name='{{ ansible_hostname }}'
+  tags:
+  - create
+
+- name: Set ETCD Node IP
+#  set_fact: node_ip='{{ ansible_default_ipv4.address }}'
+  set_fact: node_ip='{{ ansible_host }}'
+  tags:
+  - create
+
+- name: Copy ETCD Config
+  template:
+    src: 'templates/{{ item }}.j2'
+    dest: '{{ etcd_dir }}/{{ item }}'
+  with_items:
+  - etcd.conf
+  notify:
+  - etcd_restart
+  tags:
+  - create
+
+- name: Setup SELinux context
+  sefcontext:
+    target: '{{ item }}(/.*)?'
+    setype: '{{ etcd_selinux }}'
+    state: present
+  with_items:
+  - '{{ etc_data }}'
+  tags:
+  - create
+
+- name: Create ETCD data directory
+  file:
+    path: '{{ item }}'
+    owner: etcd
+    group: etcd
+    state: directory
+  with_items:
+  - '{{ etc_data }}'
+  tags:
+  - create
+
+- name: Create ETCD Service Configuration
+  template:
+    src: 'templates/etcd3.service.j2'
+    dest: '{{ systemd_etc_directory }}/etcd3.service'
+  notify:
+  - etcd_restart
+  tags:
+  - create
+
+- name: Start ETCD3 Service
+  systemd:
+    name: etcd3
+    state: started
+  register: etcd3
+  tags:
+  - create
+
+- name: Waiting for ETCD started up
+  uri:
+    url: http://{{ ansible_host }}:2379/v2/keys/
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 10
+  tags:
+  - create
+
+- name: Warming up ETCD cluster
+  pause:
+    seconds: 10
+  when: etcd3.changed == true
+  tags:
+  - create
+
+- name: Stop ETCD3 Service
+  systemd:
+    name: etcd3
+    state: stopped
+  tags:
+  - clean
+
+- name: Remove SELinux context
+  sefcontext:
+    target: '{{ item }}(/.*)?'
+    setype: '{{ etcd_selinux }}'
+    state: absent
+  with_items:
+  - '{{ etc_data }}'
+  tags:
+  - clean
+
+- name: Remove ETCD data content
+  file:
+    path: '{{ etc_data }}'
+    state: absent
+  tags:
+  - clean

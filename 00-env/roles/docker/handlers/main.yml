@@ -1,0 +1,7 @@
+---
+# handlers file for docker
+- name: docker_restart
+  systemd:
+    name: docker
+    state: restarted
+    enabled: true

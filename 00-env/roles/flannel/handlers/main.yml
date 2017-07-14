@@ -1,0 +1,18 @@
+---
+# handlers file for flannel
+- name: flanneld_restart
+  systemd:
+    name: '{{ item }}'
+    daemon_reload: yes
+    enabled: true
+    state: restarted
+  with_items:
+  - flanneld
+
+- name: docker_restart
+  systemd:
+    name: '{{ item }}'
+    enabled: true
+    state: restarted
+  with_items:
+  - docker

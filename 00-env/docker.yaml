@@ -1,0 +1,5 @@
+---
+- name: Manage Kubernetes' Docker images
+  hosts: kube-nodes
+  roles:
+  - role: docker
