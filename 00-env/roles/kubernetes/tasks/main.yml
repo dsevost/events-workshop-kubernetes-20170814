@@ -53,3 +53,14 @@
   - kube-proxy
   tags:
   - create
+
+- name: Stop and Disable Services
+  systemd:
+    name: '{{ item }}'
+    state: stopped
+    enabled: false
+  with_items:
+  - kubelet
+  - kube-proxy
+  tags:
+  - clean

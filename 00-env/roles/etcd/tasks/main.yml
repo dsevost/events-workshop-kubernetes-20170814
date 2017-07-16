@@ -56,6 +56,7 @@
   systemd:
     name: etcd3
     state: started
+    enabled: true
   register: etcd3
   tags:
   - create
@@ -82,6 +83,7 @@
   systemd:
     name: etcd3
     state: stopped
+    enabled: false
   tags:
   - clean
 

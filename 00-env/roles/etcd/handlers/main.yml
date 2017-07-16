@@ -4,5 +4,4 @@
   systemd:
     name: etcd3
     daemon_reload: yes
-    enabled: true
     state: restarted

@@ -2,17 +2,40 @@
 # handlers file for flannel
 - name: flanneld_restart
   systemd:
-    name: '{{ item }}'
+    name: flanneld
     daemon_reload: yes
-    enabled: true
     state: restarted
-  with_items:
-  - flanneld
+
+- name: flanneld_stop
+  systemd:
+    name: flanneld
+    state: stopped
+
+- name: flannel_removeif
+  command: ip li del 'flannel.{{ flannel_vxlan }}'
+  ignore_errors: true
+
+- name: docker_removeif
+  command: ip li del docker0
+  ignore_errors: true
+
+- name: docker_removenet
+  file:
+    path: /var/lib/docker/network/files/local-kv.db
+    state: absent
+  ignore_errors: true
 
 - name: docker_restart
   systemd:
-    name: '{{ item }}'
-    enabled: true
+    name: docker
     state: restarted
-  with_items:
-  - docker
+
+- name: docker_start
+  systemd:
+    name: docker
+    state: started
+
+- name: docker_stop
+  systemd:
+    name: docker
+    state: stopped

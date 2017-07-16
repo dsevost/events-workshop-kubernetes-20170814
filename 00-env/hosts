@@ -10,6 +10,7 @@ etcd_guid_file='/tmp/etcd_guid.txt'
 # A Key Flanneld will looking up its network configuration at ETCD
 #
 flannel_key=flanneld/kubernetes/network
+flannel_vxlan=1024001
 #local_domain='client.local'
 
 [all-nodes:vars]

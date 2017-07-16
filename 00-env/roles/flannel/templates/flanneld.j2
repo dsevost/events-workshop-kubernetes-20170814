@@ -1,4 +1,4 @@
 # {{ ansible_managed }}
 FLANNEL_ETCD_ENDPOINTS=http://127.0.0.1:2379
 FLANNEL_ETCD_PREFIX={{ flannel_key }}
-#FLANNEL_OPTIONS=""
+FLANNEL_OPTIONS="-ip-masq"

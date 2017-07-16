@@ -43,6 +43,7 @@
   systemd:
     name: flanneld
     state: started
+    enabled: true
   notify:
   - docker_restart
   tags:
@@ -53,7 +54,11 @@
     path: /run/flannel/docker
     state: absent
   notify:
-  - docker_restart
+  - flanneld_stop
+  - flannel_removeif
+#  - docker_stop
+#  - docker_removeif
+#  - docker_removenet
   tags:
   - clean
 
@@ -62,5 +67,32 @@
     name: flanneld
     state: stopped
     enabled: false
+  tags:
+  - clean
+
+- name: Stop Docker Service
+  systemd:
+    name: docker
+    state: stopped
+  tags:
+  - clean
+
+- name: Remove old docker0 bridge
+  command: ip li del docker0
+  ignore_errors: true
+  tags:
+  - clean
+
+- name: Remove Docker network config cache
+  file:
+    path: /var/lib/docker/network/files/local-kv.db
+    state: absent
+  tags:
+  - clean
+
+- name: Start Docker Service
+  systemd:
+    name: docker
+    state: started
   tags:
   - clean
