@@ -57,3 +57,8 @@ kill-helloworld:		# Kill running container instance
 
 remove-helloworld:		# Remove hello-world artifacts
 	ansible master-client -m command -a 'kubectl delete all -l run=hello-world'
+
+#build-eap-ds-test:		# Create Docker Image for JBoss EAP Web Application
+#	sudo docker pull jboss-eap-7/eap70-openshift
+#	h=$$HOME ; \
+#	sudo $$h/bin/s2i build https://github.com/dsevost/eap-6-pg-test jboss-eap-7/eap70-openshift eap-ds-test
