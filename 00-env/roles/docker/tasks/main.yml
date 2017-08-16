@@ -1,11 +1,24 @@
 ---
 # tasks file for docker
-- name: Setup Docker Insceure Registry
+- name: Check Docker Registry Config view NEW WAY
+  stat: path=/etc/containers/registries.conf
+  register: docker_registry_new_way
+
+- name: Setup Docker Insceure Registry OLD WAY
   lineinfile:
     name: /etc/sysconfig/docker
     regexp: '^ADD_REGISTRY='
     line: ADD_REGISTRY='--add-registry {{ satellite_host }}:5000'
-  when: satellite_host != ''
+  when: satellite_host != '' and docker_registry_new_way.exists == False
+  notify:
+  - docker_restart
+
+- name: Setup Docker Insceure Registry NEW WAY
+  lineinfile:
+    name: /etc/sysconfig/docker
+    regexp: '#?insecure_registries:'
+    line: insecure_registries: [ {{ satellite_host }}:5000 ]
+  when: satellite_host != '' and docker_registry_new_way.exists == True
   notify:
   - docker_restart
 
