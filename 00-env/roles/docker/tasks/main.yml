@@ -9,16 +9,22 @@
     name: /etc/sysconfig/docker
     regexp: '^ADD_REGISTRY='
     line: ADD_REGISTRY='--add-registry {{ satellite_host }}:5000'
-  when: satellite_host != '' and docker_registry_new_way.exists == False
+  when: satellite_host != '' and docker_registry_new_way.stat.exists == False
   notify:
   - docker_restart
 
 - name: Setup Docker Insceure Registry NEW WAY
-  lineinfile:
-    name: /etc/sysconfig/docker
-    regexp: '#?insecure_registries:'
-    line: insecure_registries: [ {{ satellite_host }}:5000 ]
-  when: satellite_host != '' and docker_registry_new_way.exists == True
+  blockinfile:
+    name: /etc/containers/registries.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    insertafter: 'registries:'
+    block: |
+      registries:
+        - registry.access.redhat.com
+        - {{ satellite_host }}:5000
+      insecure_registries:
+        - {{ satellite_host }}:5000
+  when: satellite_host != '' and docker_registry_new_way.stat.exists == True
   notify:
   - docker_restart
 

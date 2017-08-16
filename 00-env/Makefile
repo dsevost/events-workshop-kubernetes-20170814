@@ -24,7 +24,7 @@ host:				# Setup Hosts
 	ansible-playbook host.yaml
 
 docker:
-	ansible-role .docker.yaml
+	ansible-playbook .docker.yaml
 
 kube:				# Install Kubernetes Cluster
 	ansible-playbook kubernetes.yaml --tags create
@@ -32,7 +32,10 @@ kube:				# Install Kubernetes Cluster
 flannel:
 	ansible-playbook .flannel.yaml --tags create
 
-get-all:			# Show artifacts artifacts
+get-nodes:			# Show kubernetes nodes
+	ansible master-client -m command -a 'kubectl get nodes'
+
+get-all:			# Show Kubernetes artifacts for namespace 'default'
 	ansible master-client -m command -a 'kubectl get all -o wide'
 
 create-helloworld:		# Create hello-world deployment
