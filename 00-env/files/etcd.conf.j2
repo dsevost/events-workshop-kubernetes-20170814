@@ -1,8 +1,0 @@
-# {{ ansible_managed }}
-ETCD_NAME={{ node_name }}
-ETCD_INITIAL_ADVERTISE_PEER_URLS=http://{{ node_ip }}:2380,http://{{ node_ip }}:7001
-ETCD_LISTEN_PEER_URLS=http://{{ node_ip }}:2380,http://{{ node_ip }}:7001
-ETCD_ADVERTISE_CLIENT_URLS=http://{{ node_ip }}:2379,http://{{ node_ip }}:4001
-ETCD_LISTEN_CLIENT_URLS=http://{{ node_ip }}:2379,http://{{ node_ip }}:4001,http://127.0.0.1:2379
-ETCD_DATA_DIR={{ etc_data }}
-DISCOVERY_TOKEN={{ etcd_guid_file_content }}

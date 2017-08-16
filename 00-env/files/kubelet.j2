@@ -1,5 +1,0 @@
-# {{ ansible_managed }}
-KUBELET_ADDRESS="--address=127.0.0.1"
-KUBELET_ARGS="--register-node=true --pod-manifest-path=/etc/kubernetes/manifests --register-schedulable=true --allow-privileged=false"
-KUBELET_API_SERVER="--api-servers=http://127.0.0.1:8080"
-KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=rhel7/pod-infrastructure:latest"
