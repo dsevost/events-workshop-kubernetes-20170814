@@ -46,6 +46,11 @@
   tags:
   - create
 
+- name: Change VM Console Setting
+  command: echo "Change Virtual Console Setting to "Headless mode and VirtIO Serial Console" manually via VM Manager Console'
+  tags:
+  - create
+
 - name: Start vm
   ovirt_vms:
     auth: '{{ ovirt_auth }}'

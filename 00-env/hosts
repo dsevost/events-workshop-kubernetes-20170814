@@ -10,7 +10,7 @@ etcd_guid_file='/tmp/etcd_guid.txt'
 # A Key Flanneld will looking up its network configuration at ETCD
 #
 flannel_key=flanneld/kubernetes/network
-flannel_vxlan=1024001
+flannel_vxlan=1111
 #local_domain='client.local'
 
 [all-nodes:vars]
@@ -90,13 +90,13 @@ postgres_image='postgresql-95-rhel7'
 # Host where Kubernetes client runs
 #
 [master-client]
-ds-kube01.client.local
+cwp1-kube01.client.local
 
 #
 # Kubernetes nodes
 #
 [kube-nodes]
-ds-kube0[1:3].client.local
+cwp1-kube0[1:3].client.local
 #ds-kube01.client.local ansible_host=192.168.62.121
 #ds-kube02.client.local ansible_host=192.168.62.123
 #ds-kube03.client.local ansible_host=192.168.62.126
