@@ -16,8 +16,6 @@
 - name: Setup Docker Insceure Registry NEW WAY
   blockinfile:
     name: /etc/containers/registries.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    insertafter: 'registries:'
     block: |
       registries:
         - registry.access.redhat.com

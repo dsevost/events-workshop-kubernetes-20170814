@@ -47,7 +47,7 @@
   - create
 
 - name: Change VM Console Setting
-  command: echo "Change Virtual Console Setting to "Headless mode and VirtIO Serial Console" manually via VM Manager Console'
+  command: echo 'Change Virtual Console Setting to "Headless mode and VirtIO Serial Console" manually via VM Manager Console'
   tags:
   - create
 
