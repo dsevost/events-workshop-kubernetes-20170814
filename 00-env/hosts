@@ -26,7 +26,7 @@ bastion
 #
 kube_vm_template='rhel-atomic-cloud-7.3.0-3.x86_64'
 #
-# User name and password for default user ad Atomic host
+# User name and password for default user at Atomic host
 #
 user_name='cloud-user'
 user_password='redhat'
