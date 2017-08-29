@@ -22,6 +22,7 @@
         - {{ satellite_host }}:5000
       insecure_registries:
         - {{ satellite_host }}:5000
+
   when: satellite_host != '' and docker_registry_new_way.stat.exists == True
   notify:
   - docker_restart

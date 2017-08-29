@@ -3,5 +3,14 @@
 - name: Upgrade Atomic Host to latest OSTree
   atomic_host:
     revision: latest
-  notify:
-  - reboot_host
+
+- name: reboot_host
+  command: shutdown -r +2
+  ignore_errors: yes
+
+#  notify:
+#  - reboot_host
+
+- name: Waiting to Atomic wake up
+  pause:
+    seconds: 180
